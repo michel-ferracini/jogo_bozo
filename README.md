@@ -1,6 +1,8 @@
 # Bozó
 ## Implementação do jogo Bozó (também conhecido como GENERAL) para a disciplina de POO, cursada no ICMC, no ano de 2017.
 
+## Created by caroles on 29/03/2017.
+
 Esse jogo se baseia no lance de cinco dados simultaneamente. O jogador tenta completar 10 casas de um placar: 
 #1, #2, #3, #4, #5, #6, Full House, Sequência, Quadra e General.
 
