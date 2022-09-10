@@ -27,7 +27,7 @@ public class SocketClient extends Thread {
             // envia o nome para o servidor
             out.println(meuNome.toUpperCase());
             // instancia uma Thread para o IP/Porta conectador e inicia a thread
-            Thread thread = new SocketClient(echoSocket);
+            Thread thread = new SocketClient3(echoSocket);
             thread.start();
             
             String msg;

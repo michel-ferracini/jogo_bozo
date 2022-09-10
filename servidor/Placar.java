@@ -5,15 +5,29 @@
 /** Organiza o placar do jogo
  * */
 public class Placar {
-    int placar[];
+    int[] placar;
     /**Construtor que seta um vetor de dez posições para ser o placar e o aloca com valores inválidos de
      * pontuação (-1)
      * */
-    public Placar () {
+
+    private static Placar unicaInstancia = null;
+
+    public void inicializarTabuleiro(){
         placar = new int[10];
         for (int i = 0; i < 10; i++) placar[i] = -1;
     }
 
+//    public synchronized static Placar getInstance() {
+//        if(unicaInstancia == null) {
+//            unicaInstancia = new Placar();
+//        }
+//        return unicaInstancia;
+//    }
+
+    public Placar(){
+        placar = new int[10];
+        for (int i = 0; i < 10; i++) placar[i] = -1;
+    }
     /**Verifica onde deve inserir cada pontuação e se a jogada é válida
      * @param posicao onde deve ser inserida a pontuação
      * @param dados o vetor que contém os dados da jogada a ser inserida
@@ -168,8 +182,9 @@ public class Placar {
 
     /**Representa a tabela de pontos do jogo
      * @return a string com a representação da tabela*/
-    public String toString () {
-        return  " "+(placar[0] == -1 ? "(1)" : placar[0])+"     " +
+    public String toString (String nome) {
+        return  "Placar do jogador - " + nome +"     \n"+
+                " "+(placar[0] == -1 ? "(1)" : placar[0])+"     " +
                 "|   "+(placar[6] == -1 ? "(7)" : placar[6])+"     " +
                 "|    "+(placar[3] == -1 ? "(4)" : placar[3])+"  \n" +
                 " --------------------------\n" +
