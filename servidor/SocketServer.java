@@ -7,321 +7,308 @@ import java.util.List;
 import java.util.Enumeration;
 
 public class SocketServer extends Thread {
-    String mensagem_servidor;
-    private Socket clientSocket;
-    private static Vector<PrintStream> CLIENTES;
-    private String nomeCliente;
-    private static List<String> LISTA_DE_NOMES = new ArrayList<String>();
+	String mensagem_servidor;
+	private Socket clientSocket;
+	private static Vector<PrintStream> CLIENTES;
+	private String nomeCliente;
+	private static List<String> LISTA_DE_NOMES = new ArrayList<String>();
+	private static List<Placar> LISTA_DE_PLACAR = new ArrayList<Placar>();
 
-    private static List<Placar> LISTA_DE_PLACAR = new ArrayList<Placar>();
-//	static int verifica1 = 0;
-//	static int verifica2 = 0;
-//	Placar LISTA_DE_PLACAR.get(0);
-//	Placar LISTA_DE_PLACAR.get(1);
+	public SocketServer(Socket socket) {
+		this.clientSocket = socket;
+	}
 
+	public boolean armazena(String novoNome) {
+		System.out.println(LISTA_DE_NOMES);
+		for (int i = 0; i < LISTA_DE_NOMES.size(); i++) {
+			if (LISTA_DE_NOMES.get(i).equals(novoNome)) {
+				return true;
+			}
+		}
+		LISTA_DE_NOMES.add(novoNome);
+		return false;
+	}
 
-    public SocketServer(Socket socket) {
-        this.clientSocket = socket;
-    }
+	public void remove(String outNome) {
+		for (int i = 0; i < LISTA_DE_NOMES.size(); i++) {
+			if (LISTA_DE_NOMES.get(i).equals(outNome)) {
+				LISTA_DE_NOMES.remove(outNome);
+			}
+		}
+	}
 
-    public boolean armazena(String novoNome) {
-        System.out.println(LISTA_DE_NOMES);
-        for (int i = 0; i < LISTA_DE_NOMES.size(); i++) {
-            if (LISTA_DE_NOMES.get(i).equals(novoNome)) {
-                return true;
-            }
-        }
-        LISTA_DE_NOMES.add(novoNome);
-        return false;
-    }
+	public static void main(String[] args) throws IOException {
+		ServerSocket serverSocket = null;
+		CLIENTES = new Vector<PrintStream>();
 
-    public boolean armazenaPlacar(Placar placar) {
-        System.out.println(LISTA_DE_PLACAR);
-        if (LISTA_DE_PLACAR.size() < 2) {
-            LISTA_DE_PLACAR.add(placar);
-            return true;
-        }
-        return false;
-    }
+		try {
+			serverSocket = new ServerSocket(12345); // Bind
+			System.out.println("Aguardando jogadores...");
 
-    public void remove(String outNome) {
-        for (int i = 0; i < LISTA_DE_NOMES.size(); i++) {
-            if (LISTA_DE_NOMES.get(i).equals(outNome)) {
-                LISTA_DE_NOMES.remove(outNome);
-            }
-        }
-    }
+			while (true) {
+				Socket clientSocket = serverSocket.accept();
+				Thread t = new SocketServer(clientSocket);
+				t.start(); // Quando iniciado, chama o método run
+			}
+		} catch (IOException e) {
+			System.err.println("Falha ao conectar.");
+			System.exit(1);
+		}
 
-    public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = null;
-        CLIENTES = new Vector<PrintStream>();
-        ServerSocket serverPlacar = new ServerSocket();
-        try {
-            serverSocket = new ServerSocket(12345); // Bind
-            System.out.println("Aguardando jogadores...");
+		System.out.println("Conexão realizada com sucesso.");
+		System.out.println("Aguardando jogadores...");
+	} // Fim do main
 
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                Thread t = new SocketServer(clientSocket);
-                t.start(); // Quando iniciado, chama o método run
-            }
-        } catch (IOException e) {
-            System.err.println("Falha ao conectar.");
-            System.exit(1);
-        }
+	public void run() {
+		try {
+			PrintStream out = new PrintStream(clientSocket.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					clientSocket.getInputStream()));
 
-        System.out.println("Conexão realizada com sucesso.");
-        System.out.println("Aguardando jogadores...");
-    } // Fim do main
+			this.nomeCliente = in.readLine();
 
-    public void run() {
-        try {
-            PrintStream out = new PrintStream(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    clientSocket.getInputStream()));
+			if (armazena(this.nomeCliente)) {
+				out.println("Nome já existe. Entre com outro nome.");
+				this.clientSocket.close();
+				return;
+			} else {
+				System.out.println(this.nomeCliente + " entrou no jogo.");
+				mensagem_servidor = this.nomeCliente + ", bem vindo ao BOZÓ!\n";
 
-            this.nomeCliente = in.readLine();
+				if (LISTA_DE_NOMES.size() < 4) {
+					mensagem_servidor = mensagem_servidor + "Aguardando mais "
+							+ (4 - LISTA_DE_NOMES.size()) + " jogadores...\n";
+				}
 
-            if (armazenaPlacar(new Placar())) {
-                out.println("Placar adicionado.");
-            } else {
-                out.println("Placar existente.");
-            }
-            
-            if (armazena(this.nomeCliente)) {
-                out.println("Nome já existe. Entre com outro nome.");
-                this.clientSocket.close();
-                return;
-            } else {
-                System.out.println(this.nomeCliente + " entrou no jogo.");
-                mensagem_servidor = this.nomeCliente + ", bem vindo ao BOZÓ!\n";
+				mensagem_servidor = mensagem_servidor + "==================\n";
+				out.println(mensagem_servidor);
 
-                if (LISTA_DE_NOMES.size() < 4) {
-                    mensagem_servidor = mensagem_servidor + "Aguardando mais "
-                            + (4 - LISTA_DE_NOMES.size()) + " jogadores...\n";
-                }
+				if (LISTA_DE_NOMES.size() == 4) {
+					mensagem_servidor = "O número de jogadores está completo.\n"
+							+ "Aguarde " + LISTA_DE_NOMES.get(0)
+							+ " digitar (1) para iniciar o Jogo!";
+					sendMsg(out, mensagem_servidor);
 
-                mensagem_servidor = mensagem_servidor + "==================\n";
-                out.println(mensagem_servidor);
+					out.println(mensagem_servidor);
+				}
+			}
+			if (this.nomeCliente == null) {
+				return;
+			}
+			CLIENTES.add(out);
+			String inputLine = in.readLine();
 
-                if (LISTA_DE_NOMES.size() == 4) {
-                    mensagem_servidor = "O número de jogadores está completo.\n"
-                            + "Aguarde " + LISTA_DE_NOMES.get(0)
-                            + " digitar (1) para iniciar o Jogo!";
-                    sendMsg(out, " Tudo Certo: \n", mensagem_servidor);
+			// O jogo começa aqui...
 
-                    out.println(mensagem_servidor);
-                }
-            }
-            if (this.nomeCliente == null) {
-                return;
-            }
-            CLIENTES.add(out);
-            String inputLine = in.readLine();
+			RolaDados dados = new RolaDados(5); // Cria os cinco dados.
+			Placar placar1 = new Placar(); // Cria placar para a dupla de índices 0 e 2.
+			Placar placar2 = new Placar(); // Cria placar para a dupla de índices 1 e 3.
+			LISTA_DE_PLACAR.add(placar1);
+			LISTA_DE_PLACAR.add(placar2);
 
-            // O jogo começa aqui...
+			int rodada = 10;
 
-            RolaDados dados = new RolaDados(5); // Cria os cinco dados.
+			// Guarda os resultados sorteados para a dupla de índices 0 e 2:
+			int resultados1[] = {};
+			// Guarda os resultados sorteados para a dupla de índices 1 e 3:
+			int resultados2[] = {};
+			while (inputLine != null
+					&& !(inputLine.trim().equals(""))
+					&& LISTA_DE_NOMES.size() == 4) {
+				while (rodada > 0) {
+					out.println("\nEsta é a rodada " + (11 - rodada) + ".\n");
 
-            int rodada = 10;
-            // Guarda os resultados sorteados para a dupla de índices 0 e 2:
-            int resultados1[] = {};
-            // Guarda os resultados sorteados para a dupla de índices 1 e 3:
-            int resultados2[] = {};
+					int indice = LISTA_DE_NOMES.indexOf(this.nomeCliente);
+					if (indice == 0 || indice == 2) {
+						resultados1 = dados.rolar();
+					} else {
+						resultados2 = dados.rolar();
+					}
 
-            int posicao = 0;
+					sendMsg(out, dados.toString());
+					out.println(dados);
+					out.println(
+							"Escolha os dados a serem rolados novamente "
+									+ "ou tecle ENTER para finalizar a rodada.\n");
+					inputLine = in.readLine();
 
-            while (inputLine != null
-                    && !(inputLine.trim().equals(""))
-                    && LISTA_DE_NOMES.size() == 4) {
-                while (rodada > 0) {
-                    if (posicao == 0) {
-                        out.println("\nEsta é a rodada " + (11 - rodada) + ".\n");
+					String aSeremRolados = inputLine.toString();
+					if (!aSeremRolados.equals("")) {
 
-                        int indice = LISTA_DE_NOMES.indexOf(this.nomeCliente);
-                        if (indice == 0 || indice == 2) {
-                            resultados1 = dados.rolar();
-                        } else {
-                            resultados2 = dados.rolar();
-                        }
+						if (indice == 0 || indice == 2) {
+							resultados1 = dados.rolar(aSeremRolados);
+						} else {
+							resultados2 = dados.rolar(aSeremRolados);
+						}
 
-                        sendMsg(out, " Jogando: \n", dados.toString());
-                        out.println(dados);
-                        out.println(
-                                "Escolha os dados a serem rolados novamente "
-                                        + "ou tecle ENTER para finalizar a rodada.\n");
-                        inputLine = in.readLine();
-                        posicao = 1;
-                    }
-                    if (posicao == 1) {
-                        String aSeremRolados = inputLine.toString();
-                        if (!aSeremRolados.equals("")) {
+						out.println(dados);
+						sendMsg(out, dados.toString());
+						out.println("Jogando: \nEscolha os dados a serem rolados novamente "
+								+ "ou tecle ENTER para finalizar a rodada.\n");
+						inputLine = in.readLine();
+						aSeremRolados = inputLine.toString();
 
-                            int indice = LISTA_DE_NOMES.indexOf(this.nomeCliente);
-                            if (indice == 0 || indice == 2) {
-                                resultados1 = dados.rolar(aSeremRolados);
-                            } else {
-                                resultados2 = dados.rolar(aSeremRolados);
-                            }
+						if (!aSeremRolados.equals("")) {
 
-                            out.println(dados);
-                            sendMsg(out, " Jogando: \n", dados.toString());
-                            out.println("Escolha os dados a serem rolados novamente "
-                                    + "ou tecle ENTER para finalizar a rodada.\n");
-                            inputLine = in.readLine();
-                            aSeremRolados = inputLine.toString();
+							if (indice == 0 || indice == 2) {
+								resultados1 = dados.rolar(aSeremRolados);
+							} else {
+								resultados2 = dados.rolar(aSeremRolados);
+							}
+						}
+						sendMsg(out, "Jogando: \n" + dados.toString());
+						out.println(dados);
+					}
 
-                            if (!aSeremRolados.equals("")) {
+					sendMsg(out, "Jogando: \n" + dados.toString());
+					out.println(dados);
 
-                                if (indice == 0 || indice == 2) {
-                                    resultados1 = dados.rolar(aSeremRolados);
-                                } else {
-                                    resultados2 = dados.rolar(aSeremRolados);
-                                }
-                            }
-                            sendMsg(out, " Jogando: \n", dados.toString());
-                            out.println(dados);
-                        }
+					if (indice == 0 || indice == 2) {
+						sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+						out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+					} else {
+						sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+						out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+					}
 
-                        sendMsg(out, " Jogando: \n", dados.toString());
-                        out.println(dados);
+					out.println("Escolha uma posicao de 1 a 10 para ser ocupada\n");
+					inputLine = in.readLine();
+					int posicaoJogar = Integer.parseInt(inputLine);
 
-                        int indice = LISTA_DE_NOMES.indexOf(this.nomeCliente);
-                        if (indice == 0 || indice == 2) {
-                            sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                            out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                        } else {
-                            sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                            out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                        }
+					try {
+						if (indice == 0 || indice == 2) {
+							LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
+							out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+							sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+						} else {
+							LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
+							out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+							sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+						}
 
-                        out.println("Escolha uma posicao de 1 a 10 para ser ocupada\n");
-                        inputLine = in.readLine();
-                        int posicaoJogar = Integer.parseInt(inputLine);
+						out.println(this.nomeCliente
+								+ ", sua rodada foi finalizada.");
+						sendMsg(out, "Aviso: \nÉ a vez do "
+								+ proximoJogador(this.nomeCliente) + " jogar!");
+						sendMsg(out, "O jogador "
+								+ proximoJogador(this.nomeCliente)
+								+ " deve digitar 1 para continuar.");
 
-                        try {
-                            if (indice == 0 || indice == 2) {
-                                LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
-                                out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                                sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                            } else {
-                                LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
-                                out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                                sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                            }
+						inputLine = in.readLine();
+					} catch (IllegalArgumentException e) {
+						System.out.println(e.getMessage());
+						out.println("Escolha uma posição válida para ser ocupada.");
+						inputLine = in.readLine();
+						posicaoJogar = Integer.parseInt(inputLine);
 
-                            out.println("Sua rodada foi finalizada.");
-                            sendMsg(out, " aviso: \n", "É a vez do "
-                                    + proximoJogador(this.nomeCliente) + " jogar!");
-                            sendMsg(out, " aviso: \n", "O jogador "
-                                    + proximoJogador(this.nomeCliente)
-                                    + " deve digitar 1 para continuar.");
-                            inputLine = in.readLine();
-                        } catch (IllegalArgumentException e) {
-                            System.out.println(e.getMessage());
-                            out.println("Escolha uma posição válida para ser ocupada.");
-                            inputLine = in.readLine();
-                            posicaoJogar = Integer.parseInt(inputLine);
+						if (indice == 0 || indice == 2) {
+							LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
+						} else {
+							LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
+						}
 
-                            if (indice == 0 || indice == 2) {
-                                LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
-                            } else {
-                                LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
-                            }
-                        }
-                        posicao = 0;
+						// out.println("Sua rodada foi finalizada.");
+						out.println(this.nomeCliente
+								+ ", sua rodada foi finalizada.");
+						sendMsg(out, "Aviso: \nÉ a vez do "
+								+ proximoJogador(this.nomeCliente)
+								+ " jogar!");
+						sendMsg(out, "O jogador "
+								+ proximoJogador(this.nomeCliente)
+								+ " deve digitar 1 para continuar.");
+					}
 
-                        if (indice == 0 || indice == 2) {
-                            out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                            sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                        } else {
-                            out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                            sendMsg(out, " Jogando: \n", LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                        }
+					rodada--;
+				} // Fim do while que gerencia as rodadas
 
-                        out.println("Sua rodada foi finalizada.");
-                        sendMsg(out, " aviso: \n", "É a vez do "
-                                + proximoJogador(this.nomeCliente) + " jogar!");
-                        sendMsg(out, " aviso: \n", "O jogador "
-                                + proximoJogador(this.nomeCliente)
-                                + " deve digitar 1 para continuar.");
-                    }
-                    rodada--;
-                } // Fim do while que gerencia as rodadas
+				resultados(out, LISTA_DE_PLACAR.get(0), LISTA_DE_PLACAR.get(1));
+				inputLine = in.readLine();
+			} // Fim do While que gerencia os jogadores
 
-                mensagem_servidor = "obteve " + LISTA_DE_PLACAR.get(0).getScore() + " pontos!\n";
-                out.println("A dupla " + LISTA_DE_NOMES.get(0) + " e "
-                        + LISTA_DE_NOMES.get(2) + mensagem_servidor);
-                sendMsg(out, " aviso: \n", mensagem_servidor);
+			// O jogo acaba aqui.
 
-                mensagem_servidor = "obteve " + LISTA_DE_PLACAR.get(1).getScore() + " pontos!\n";
-                out.println("A dupla " + LISTA_DE_NOMES.get(1) + " e "
-                        + LISTA_DE_NOMES.get(3) + mensagem_servidor);
-                sendMsg(out, " aviso: \n", mensagem_servidor);
+			// Se cliente enviar linha em branco, servidor encerra a conexão.
+			System.out.println(this.nomeCliente + " desconectou.");
+			// Mensagem de saida do chat aos CLIENTES conectados:
+			sendMsg(out, " Saiu !!!");
+			// Remove nome da lista
+			remove(this.nomeCliente);
+			// Exclui atributos relacionados ao cliente:
+			CLIENTES.remove(out);
+			// Fecha a conexão com este cliente:
+			this.clientSocket.close();
+		} catch (IOException e) {
+			System.out.println("Falha na Conexão...\nIOException: " + e);
+		}
+	} // Fim run
 
-                mensagem_servidor = " venceu!\n";
-                if (LISTA_DE_PLACAR.get(0).getScore() > LISTA_DE_PLACAR.get(1).getScore()) {
-                    out.println("A dupla " + LISTA_DE_NOMES.get(0) + " e "
-                            + LISTA_DE_NOMES.get(2) + mensagem_servidor);
-                    sendMsg(out, " aviso: \n", mensagem_servidor);
-                } else if (LISTA_DE_PLACAR.get(1).getScore() > LISTA_DE_PLACAR.get(0).getScore()) {
-                    out.println("A dupla " + LISTA_DE_NOMES.get(1) + " e "
-                            + LISTA_DE_NOMES.get(3) + mensagem_servidor);
-                    sendMsg(out, " aviso: \n", mensagem_servidor);
-                } else {
-                    mensagem_servidor = "\n";
-                    out.println("O jogo terminou empatado.");
-                    sendMsg(out, " aviso: \n", mensagem_servidor);
-                }
-                inputLine = in.readLine();
-            } // Fim do While que gerencia os jogadores
+	public String proximoJogador(String nomeAtual) {
+		String proximo = "";
+		int indice = LISTA_DE_NOMES.indexOf(nomeAtual);
+		switch (indice) {
+			case 0:
+				proximo = LISTA_DE_NOMES.get(1);
+				break;
+			case 1:
+				proximo = LISTA_DE_NOMES.get(2);
+				break;
+			case 2:
+				proximo = LISTA_DE_NOMES.get(3);
+				break;
+			case 3:
+				proximo = LISTA_DE_NOMES.get(0);
+				break;
+		}
+		return proximo;
+	}
 
-            // O jogo acaba aqui.
+	public void resultados(PrintStream out, Placar placar1, Placar placar2) {
+		out.println("A dupla "
+				+ LISTA_DE_NOMES.get(0)
+				+ " e "
+				+ LISTA_DE_NOMES.get(2)
+				+ " obteve "
+				+ placar2.getScore()
+				+ " pontos!\n");
 
-            // Se cliente enviar linha em branco, servidor encerra a conexão.
-            System.out.println(this.nomeCliente + " desconectou.");
-            // Mensagem de saida do chat aos CLIENTES conectados:
-            sendMsg(out, " Saiu", " !!!");
-            // Remove nome da lista
-            remove(this.nomeCliente);
-            // Exclui atributos relacionados ao cliente:
-            CLIENTES.remove(out);
-            // Fecha a conexão com este cliente:
-            this.clientSocket.close();
-        } catch (IOException e) {
-            System.out.println("Falha na Conexão...\nIOException: " + e);
-        }
-    } // Fim run
+		out.println("A dupla "
+				+ LISTA_DE_NOMES.get(1)
+				+ " e "
+				+ LISTA_DE_NOMES.get(3)
+				+ " obteve "
+				+ placar2.getScore()
+				+ " pontos!\n");
 
-    public String proximoJogador(String nomeAtual) {
-        String proximo = "";
-        int indice = LISTA_DE_NOMES.indexOf(nomeAtual);
-        switch (indice) {
-            case 0:
-                proximo = LISTA_DE_NOMES.get(1);
-                break;
-            case 1:
-                proximo = LISTA_DE_NOMES.get(2);
-                break;
-            case 2:
-                proximo = LISTA_DE_NOMES.get(3);
-                break;
-            case 3:
-                proximo = LISTA_DE_NOMES.get(0);
-                break;
-        }
-        return proximo;
-    }
+		// Pontuação final das duplas:
+		int pontosDupla1 = placar1.getScore();
+		int pontosDupla2 = placar2.getScore();
 
-    public void sendMsg(PrintStream out, String acao, String msg) {
-        Enumeration<PrintStream> e = CLIENTES.elements();
-        while (e.hasMoreElements()) {
-            // Obtém o fluxo de saída de um dos clientes:
-            PrintStream chat = (PrintStream) e.nextElement();
-            if (chat != out) {
-                // Envia mensagem para todos, menos para o próprio jogador:
-                chat.println(this.nomeCliente + acao + msg);
-            }
-        }
-    }
+		if (pontosDupla1 > pontosDupla2) {
+			out.println("A dupla "
+					+ LISTA_DE_NOMES.get(0)
+					+ " e "
+					+ LISTA_DE_NOMES.get(2)
+					+ " venceu!");
+		} else if (pontosDupla2 > pontosDupla1) {
+			out.println("A dupla "
+					+ LISTA_DE_NOMES.get(1)
+					+ " e "
+					+ LISTA_DE_NOMES.get(3)
+					+ " venceu!");
+		} else {
+			out.println("O jogo terminou empatado.");
+		}
+	}
+
+	public void sendMsg(PrintStream out, String msg) {
+		Enumeration<PrintStream> e = CLIENTES.elements();
+		while (e.hasMoreElements()) {
+			// Obtém o fluxo de saída de um dos clientes:
+			PrintStream chat = (PrintStream) e.nextElement();
+			if (chat != out) {
+				// Envia mensagem para todos, menos para o próprio jogador:
+				chat.println(msg);
+			}
+		}
+	}
 } // Fim class SocketServer
