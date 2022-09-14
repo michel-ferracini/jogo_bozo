@@ -1,0 +1,1 @@
+Escolha uma posicao de 1 a 10 para ser ocupada

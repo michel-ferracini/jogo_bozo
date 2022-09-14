@@ -106,7 +106,7 @@ public class SocketServer extends Thread {
 			LISTA_DE_PLACAR.add(placar1);
 			LISTA_DE_PLACAR.add(placar2);
 
-			int rodada = 10;
+			int rodada = 5;
 
 			// Guarda os resultados sorteados para a dupla de índices 0 e 2:
 			int resultados1[] = {};
@@ -127,14 +127,12 @@ public class SocketServer extends Thread {
 
 					sendMsg(out, dados.toString());
 					out.println(dados);
-					out.println(
-							"Escolha os dados a serem rolados novamente "
-									+ "ou tecle ENTER para finalizar a rodada.\n");
+					out.println("Escolha os dados a serem rolados novamente "
+							+ "ou tecle ENTER para finalizar a rodada.\n");
 					inputLine = in.readLine();
 
 					String aSeremRolados = inputLine.toString();
 					if (!aSeremRolados.equals("")) {
-
 						if (indice == 0 || indice == 2) {
 							resultados1 = dados.rolar(aSeremRolados);
 						} else {
@@ -149,7 +147,6 @@ public class SocketServer extends Thread {
 						aSeremRolados = inputLine.toString();
 
 						if (!aSeremRolados.equals("")) {
-
 							if (indice == 0 || indice == 2) {
 								resultados1 = dados.rolar(aSeremRolados);
 							} else {
@@ -171,7 +168,7 @@ public class SocketServer extends Thread {
 						out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
 					}
 
-					out.println("Escolha uma posicao de 1 a 10 para ser ocupada\n");
+					out.println("Escolha uma posicao de 1 a 10 para ser ocupada.");
 					inputLine = in.readLine();
 					int posicaoJogar = Integer.parseInt(inputLine);
 
@@ -207,7 +204,6 @@ public class SocketServer extends Thread {
 							LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
 						}
 
-						// out.println("Sua rodada foi finalizada.");
 						out.println(this.nomeCliente
 								+ ", sua rodada foi finalizada.");
 						sendMsg(out, "Aviso: \nÉ a vez do "

@@ -41,24 +41,30 @@ public class SocketClient extends Thread {
 						+ " digitar (1) para iniciar o Jogo!";
 				String instrucaoProsseguimento = "O jogador " + meuNome.toUpperCase()
 						+ " deve digitar 1 para continuar.";
-				String instrucaoFim = meuNome.toUpperCase() + ", sua rodada foi finalizada.";
+				String instrucaoFim = "Escolha uma posicao de 1 a 10 para ser ocupada.";
 
 				boolean verificaInicio = msgRecebida.equals(instrucaoInicio);
 				boolean verificaProsseguimento = msgRecebida.equals(instrucaoProsseguimento);
 				boolean verificaFim = msgRecebida.equals(instrucaoFim);
 
 				if (verificaInicio || verificaProsseguimento) {
+					System.out.println("Inicio: " + verificaInicio
+							+ "\nFim: " + verificaProsseguimento);
 					enviaMsg = true;
-				}
-				if (verificaFim) {
-					enviaMsg = false;
 				}
 
 				if (enviaMsg) {
-					// Faz a leitura da mensagem a ser enviada:
-					msg = in.readLine();
-					// Envia a mensagem para o servidor:
-					out.println(msg);
+					if (verificaFim) {
+						System.out.println("Verifica fim.");
+						enviaMsg = false;
+					}
+					if (enviaMsg) {
+						System.out.println("envia mensagem.");
+						// Faz a leitura da mensagem a ser enviada:
+						msg = in.readLine();
+						// Envia a mensagem para o servidor:
+						out.println(msg);
+					}
 				}
 			}
 

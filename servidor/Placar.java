@@ -230,7 +230,7 @@ public class Placar {
      * @return a string com a representação da tabela
      */
     public String toString(String nome) {
-        return "Placar do jogador " + nome + ":\n\n" +
+        return nome + " - Placar: \n\n" +
                 " " + (placar[0] == -1 ? "(1)" : placar[0]) + "     " +
                 "|   " + (placar[6] == -1 ? "(7)" : placar[6]) + "     " +
                 "|    " + (placar[3] == -1 ? "(4)" : placar[3]) + "  \n" +
