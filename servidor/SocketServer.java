@@ -1,3 +1,5 @@
+package servidor;
+
 import java.net.*;
 import java.io.*;
 import java.util.Vector;
@@ -67,16 +69,18 @@ public class SocketServer extends Thread {
 
 			this.nomeCliente = in.readLine();
 
-			if (armazena(this.nomeCliente)) {
+			while (armazena(this.nomeCliente)) {
 				out.println("Nome já existe. Entre com outro nome.");
-				this.clientSocket.close();
-				return;
-			} else {
+				this.nomeCliente = in.readLine().toUpperCase();
+//				this.clientSocket.close();
+			}
 				System.out.println(this.nomeCliente + " entrou no jogo.");
-				mensagem_servidor = this.nomeCliente + ", bem vindo ao BOZÓ!\n";
+				mensagem_servidor = this.nomeCliente + ", bem vindo ao BOZÓ!";
+				out.println(mensagem_servidor);
+				Thread.sleep(5000);
 
 				if (LISTA_DE_NOMES.size() < 4) {
-					mensagem_servidor = mensagem_servidor + "Aguardando mais "
+					mensagem_servidor = "\nAguardando mais "
 							+ (4 - LISTA_DE_NOMES.size()) + " jogadores...\n";
 				}
 
@@ -91,7 +95,13 @@ public class SocketServer extends Thread {
 
 					out.println(mensagem_servidor);
 				}
+			if (LISTA_DE_NOMES.size() > 4) {
+				mensagem_servidor = "O número de jogadores está completo.\n"
+						+ " Você será desconectado!";
+				out.println(mensagem_servidor);
+					this.clientSocket.close();
 			}
+
 			if (this.nomeCliente == null) {
 				return;
 			}
@@ -116,7 +126,7 @@ public class SocketServer extends Thread {
 					&& !(inputLine.trim().equals(""))
 					&& LISTA_DE_NOMES.size() == 4) {
 				while (rodada > 0) {
-					out.println("\nEsta é a rodada " + (11 - rodada) + ".\n");
+					out.println("\nEsta é a rodada " + (6 - rodada) + ".\n");
 
 					int indice = LISTA_DE_NOMES.indexOf(this.nomeCliente);
 					if (indice == 0 || indice == 2) {
@@ -233,7 +243,7 @@ public class SocketServer extends Thread {
 			CLIENTES.remove(out);
 			// Fecha a conexão com este cliente:
 			this.clientSocket.close();
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			System.out.println("Falha na Conexão...\nIOException: " + e);
 		}
 	} // Fim run
