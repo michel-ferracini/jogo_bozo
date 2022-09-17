@@ -220,72 +220,56 @@ public class SocketServer extends Thread {
                     paraValidar = inputLine.toString();
                     //validação do input
                     entradasValidas = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+                    boolean continua = true;
+                    while (continua) {
+                        if(verificaEntrada(entradasValidas, paraValidar)){
+                            int posicaoJogar = Integer.parseInt(inputLine);
+                            try {
+                                if (indice == 0 || indice == 2) {
+                                    LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
+                                    out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+                                    sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
+                                    break;
+                                } else {
+                                    LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
+                                    out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+                                    sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
+                                    break;
+                                }
+                            } catch (IllegalArgumentException e) {
+                                //o catch só roda uma vez, tem que fazer um loop eu acho.
+                                System.out.println(e.getMessage());
+                                out.println("Entrada inválida. Escolha uma posição válida para ser ocupada.");
+                                inputLine = in.readLine();
+                                paraValidar = inputLine.toString();
+                            }
+                        } else {
+                            out.println("Jogando: Entrada inválida, insira um número de 1 a 10.");
+                            inputLine = in.readLine();
+                            paraValidar = inputLine.toString();
+                        }
+                    }
+
+
+                    out.println(this.nomeCliente
+                            + ", sua rodada foi finalizada.");
+                    sendMsg(out, "Aviso: \nÉ a vez do "
+                            + proximoJogador(this.nomeCliente) + " jogar!");
+                    sendMsg(out, "O jogador "
+                            + proximoJogador(this.nomeCliente)
+                            + " deve digitar 1 para continuar.");
+
+                    inputLine = in.readLine();
+                    paraValidar = inputLine;
+                    entradasValidas = new String[]{"1"};
+
                     while (!verificaEntrada(entradasValidas, paraValidar)) {
-                        out.println("Jogando: Entrada inválida, insira um número de 1 a 10.");
+                        out.println("Jogando: Entrada inválida, tecle 1 para jogar.");
                         inputLine = in.readLine();
                         paraValidar = inputLine.toString();
                     }
-                    //a partir do momento que o input se torna válido segue a execução.
-                    int posicaoJogar = Integer.parseInt(inputLine);
-                    try {
-                        if (indice == 0 || indice == 2) {
-                            LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
-                            out.println(LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                            sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(0).toString(this.nomeCliente));
-                        } else {
-                            LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
-                            out.println(LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                            sendMsg(out, "Jogando: \n" + LISTA_DE_PLACAR.get(1).toString(this.nomeCliente));
-                        }
 
-                        out.println(this.nomeCliente
-                                + ", sua rodada foi finalizada.");
-                        sendMsg(out, "Aviso: \nÉ a vez do "
-                                + proximoJogador(this.nomeCliente) + " jogar!");
-                        sendMsg(out, "O jogador "
-                                + proximoJogador(this.nomeCliente)
-                                + " deve digitar 1 para continuar.");
 
-                        inputLine = in.readLine();
-                        paraValidar = inputLine;
-                        entradasValidas = new String[]{"1"};
-
-                        while (!verificaEntrada(entradasValidas, paraValidar)) {
-                            out.println("Jogando: Entrada inválida, tecle 1 para jogar.");
-                            inputLine = in.readLine();
-                            paraValidar = inputLine.toString();
-                        }
-
-                    } catch (IllegalArgumentException e) {
-                        //o catch só roda uma vez, tem que fazer um loop eu acho.
-                        System.out.println(e.getMessage());
-                        out.println("Escolha uma posição válida para ser ocupada.");
-                        inputLine = in.readLine();
-                        paraValidar = inputLine.toString();
-
-                        while (!verificaEntrada(entradasValidas, paraValidar)) {
-                            out.println("Jogando: Entrada inválida, tecle 1 para jogar.");
-                            inputLine = in.readLine();
-                            paraValidar = inputLine.toString();
-                        }
-
-                        posicaoJogar = Integer.parseInt(inputLine);
-
-                        if (indice == 0 || indice == 2) {
-                            LISTA_DE_PLACAR.get(0).add(posicaoJogar, resultados1);
-                        } else {
-                            LISTA_DE_PLACAR.get(1).add(posicaoJogar, resultados2);
-                        }
-
-                        out.println(this.nomeCliente
-                                + ", sua rodada foi finalizada.");
-                        sendMsg(out, "Aviso: \nÉ a vez do "
-                                + proximoJogador(this.nomeCliente)
-                                + " jogar!");
-                        sendMsg(out, "O jogador "
-                                + proximoJogador(this.nomeCliente)
-                                + " deve digitar 1 para continuar.");
-                    }
                     rodada--;
                 } // Fim do while que gerencia as rodadas
 
@@ -331,13 +315,12 @@ public class SocketServer extends Thread {
     }
 
     public void resultados(PrintStream out, Placar placar1, Placar placar2) {
-        //revisar, imprime apenas para o jogado e n aos demais, soma está ficando igual.
         out.println("A dupla "
                 + LISTA_DE_NOMES.get(0)
                 + " e "
                 + LISTA_DE_NOMES.get(2)
                 + " obteve "
-                + placar2.getScore()
+                + placar1.getScore()
                 + " pontos!\n");
 
         out.println("A dupla "
