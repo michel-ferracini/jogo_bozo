@@ -45,41 +45,35 @@ public class SocketClient2 extends Thread {
 						+ " deve digitar 1 para continuar.";
 				String instrucaoFim = "Escolha uma posicao de 1 a 10 para ser ocupada.";
 				String instrucaoNomeInvalido = "Nome já existe. Entre com outro nome.";
+				String instrucaoInputInvalido = "Entrada inválida";
 
 				boolean verificaInicio = msgRecebida.equals(instrucaoInicio);
 				boolean verificaProsseguimento = msgRecebida.equals(instrucaoProsseguimento);
 				boolean verificaFim = msgRecebida.equals(instrucaoFim);
 				boolean verificaNome = msgRecebida.equals(instrucaoNomeInvalido);
+				boolean verificaInput = msgRecebida.contains(instrucaoInputInvalido);
 
-				if (verificaInicio || verificaProsseguimento || verificaNome) {
-//					System.out.println("Inicio: " + verificaInicio
-//							+ "\nFim: " + verificaProsseguimento
-//							+ "\nNome: " + verificaNome);
+				if (verificaInicio || verificaProsseguimento || verificaNome || verificaInput) {
 					enviaMsg = true;
 				}
-
-				if (enviaMsg) {
-					if (verificaFim) {
-//						System.out.println("Verifica fim.");
-						enviaMsg = false;
-					}
-					Thread.sleep(2000);
-					if(msgRecebida.contains("bem vindo ao BOZÓ!")){
+				Thread.sleep(2000); //espera para receber nova mensagem seguida
+				if (msgRecebida.contains("bem vindo ao BOZÓ!")) {
 //						System.out.println("Verifica novoNOme.");
-						meuNome = msgRecebida.split(",")[0];
-						enviaMsg = false;
-					}
-//					System.out.println();
-//					System.out.println(msgRecebida);
-//					System.out.println(msgRecebida.contains("bem vindo ao BOZÓ!"));
-					if (enviaMsg) {
-//						System.out.println(meuNome + "envia mensagem.");
-						// Faz a leitura da mensagem a ser enviada:
-						msg = in.readLine();
-						// Envia a mensagem para o servidor:
-						out.println(msg);
-					}
+					meuNome = msgRecebida.split(",")[0];
+					enviaMsg = false;
 				}
+				Thread.sleep(4000); //espera para receber nova mensagem seguida
+				if (verificaFim || msgRecebida.contains("sua rodada foi finalizada")) {
+					enviaMsg = false;
+				}
+				if (enviaMsg) {
+//						System.out.println(meuNome + "envia mensagem.");
+					// Faz a leitura da mensagem a ser enviada:
+					msg = in.readLine();
+					// Envia a mensagem para o servidor:
+					out.println(msg);
+				}
+
 			}
 
 		} catch (IOException | InterruptedException e) {
