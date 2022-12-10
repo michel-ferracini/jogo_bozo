@@ -1,4 +1,4 @@
-package servidor;
+package org.example.servidor;
 
 import java.net.*;
 import java.io.*;
@@ -315,6 +315,41 @@ public class SocketServer extends Thread {
     }
 
     public void resultados(PrintStream out, Placar placar1, Placar placar2) {
+        sendMsg( out,"A dupla "
+                + LISTA_DE_NOMES.get(0)
+                + " e "
+                + LISTA_DE_NOMES.get(2)
+                + " obteve "
+                + placar1.getScore()
+                + " pontos!\n");
+
+        sendMsg( out,"A dupla "
+                + LISTA_DE_NOMES.get(1)
+                + " e "
+                + LISTA_DE_NOMES.get(3)
+                + " obteve "
+                + placar2.getScore()
+                + " pontos!\n");
+
+        // Pontuação final das duplas:
+        int pontosDupla1 = placar1.getScore();
+        int pontosDupla2 = placar2.getScore();
+
+        if (pontosDupla1 > pontosDupla2) {
+            sendMsg( out,"A dupla "
+                    + LISTA_DE_NOMES.get(0)
+                    + " e "
+                    + LISTA_DE_NOMES.get(2)
+                    + " venceu!");
+        } else if (pontosDupla2 > pontosDupla1) {
+            sendMsg( out,"A dupla "
+                    + LISTA_DE_NOMES.get(1)
+                    + " e "
+                    + LISTA_DE_NOMES.get(3)
+                    + " venceu!");
+        } else {
+            sendMsg( out,"O jogo terminou empatado.");
+        }
         out.println("A dupla "
                 + LISTA_DE_NOMES.get(0)
                 + " e "
@@ -331,9 +366,6 @@ public class SocketServer extends Thread {
                 + placar2.getScore()
                 + " pontos!\n");
 
-        // Pontuação final das duplas:
-        int pontosDupla1 = placar1.getScore();
-        int pontosDupla2 = placar2.getScore();
 
         if (pontosDupla1 > pontosDupla2) {
             out.println("A dupla "
@@ -341,7 +373,7 @@ public class SocketServer extends Thread {
                     + " e "
                     + LISTA_DE_NOMES.get(2)
                     + " venceu!");
-        } else if (pontosDupla2 < pontosDupla1) {
+        } else if (pontosDupla2 > pontosDupla1) {
             out.println("A dupla "
                     + LISTA_DE_NOMES.get(1)
                     + " e "
