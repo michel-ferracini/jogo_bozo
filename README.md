@@ -1,7 +1,8 @@
 # Bozó
 ## Implementação do jogo Bozó (também conhecido como GENERAL) para a disciplina de POO, cursada no ICMC, no ano de 2017.
 
-## Created by caroles on 29/03/2017.
+## Created by caroles on 29/03/2017. Adaptado, no segundo semestre de 2022 para ser jogado em rede, como parte das atividades 
+do curso de Tecnologia em Análise e Desenvolvimento de Sistemas do IFMT de Primavera do Leste - MT.
 
 Esse jogo se baseia no lance de cinco dados simultaneamente. O jogador tenta completar 10 casas de um placar: 
 #1, #2, #3, #4, #5, #6, Full House, Sequência, Quadra e General.
